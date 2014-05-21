@@ -109,3 +109,20 @@ class Public < Sinatra::Base
 		'<html><head><link rel="openid2.provider" href="http://localhost:4567/" /></head><body>User</body></html>'
 	end
 end
+
+class Private < Sinatra::Base
+	enable :sessions
+
+	get '/' do
+		"Fuck yeah!"
+	end
+
+	def self.new(*)
+		app = Rack::Auth::Digest::MD5.new(super) do |username|
+			"bar" if username == "foo"
+		end
+		app.realm = 'OpenID Login'
+		app.opaque = 'secretkey'
+		app
+	end
+end
