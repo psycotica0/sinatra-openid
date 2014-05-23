@@ -44,9 +44,11 @@ class Public < Sinatra::Base
 				oidresp = oidreq.answer(false)
 			elsif logged_in?
 				oidresp = oidreq.answer(true)
+			elsif oidreq.immediate
+				oidresp = oidreq.answer(false)
 			else
 				session[:last_req] = oidreq
-				return [302, {'Location' => "/login"}, "Login"]
+				return [302, {'Location' => "/secret"}, "Login"]
 			end
 		else
 			oidresp = server.handle_request(oidreq)
@@ -68,6 +70,17 @@ class Public < Sinatra::Base
 		end
 	end
 
+	get '/resume' do
+		if session[:last_req]
+			oidreq = session[:last_req]
+			session[:last_req] = nil
+			session[:user] = 'meow'
+			return respond(oidreq.answer(true))
+		else
+			return "Why am I here?"
+		end
+	end
+
 	post '/' do
 		begin
 			oidreq = server.decode_request(params)
@@ -77,44 +90,14 @@ class Public < Sinatra::Base
 		handle(oidreq)
 	end
 
-	def logged_in
-		'<html><head><title>Login</title></head><body>Neat.<form method="post" action="/logout"><input type="submit" value="Logout" /></form></body></html>'
-	end
-
-	get '/login' do
-		if logged_in?
-			logged_in
-		else
-			'<html><head><title>Login</title></head><body>Sup Bra?<form method="post"><input type="submit" value="Login" /></form></body></html>'
-		end
-	end
-
-	post '/logout' do
-		session[:user] = nil
-		[302, {'Location' => '/login'}, "Logging Out"]
-	end
-
-	post '/login' do
-		session[:user] = 'meow'
-		if session[:last_req].nil?
-			logged_in
-		else
-			oidreq = session[:last_req]
-			session[:last_req] = nil
-			handle(oidreq)
-		end
-	end
-
 	get '/user/' do
 		'<html><head><link rel="openid2.provider" href="http://localhost:4567/" /></head><body>User</body></html>'
 	end
 end
 
 class Private < Sinatra::Base
-	enable :sessions
-
 	get '/' do
-		"Fuck yeah!"
+		[302, {'Location' => 'http://localhost:4567/resume'}, 'Resuming']
 	end
 
 	def self.new(*)
