@@ -2,13 +2,15 @@ require 'sinatra/base'
 require 'openid'
 require 'openid/store/filesystem'
 
+require File.expand_path '../secrets.rb', __FILE__
+
 class Public < Sinatra::Base
 	include OpenID::Server
 
 	enable :sessions
 
 	def logged_in?
-		session[:user] && session[:user] == 'meow'
+		session[:user] && session[:user] == Secrets.user_value
 	end
 
 	def server
@@ -74,7 +76,7 @@ class Public < Sinatra::Base
 		if session[:last_req]
 			oidreq = session[:last_req]
 			session[:last_req] = nil
-			session[:user] = 'meow'
+			session[:user] = Secrets.user_value
 			return respond(oidreq.answer(true))
 		else
 			return "Why am I here?"
@@ -102,10 +104,10 @@ class Private < Sinatra::Base
 
 	def self.new(*)
 		app = Rack::Auth::Digest::MD5.new(super) do |username|
-			"bar" if username == "foo"
+			Secrets.password username
 		end
 		app.realm = 'OpenID Login'
-		app.opaque = 'secretkey'
+		app.opaque = Secrets.opaque
 		app
 	end
 end
