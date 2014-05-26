@@ -17,7 +17,7 @@ class Public < Sinatra::Base
 		if @server.nil?
 			dir = Pathname.new(File.dirname($0)).join('db').join('openid-store')
 			store = OpenID::Store::Filesystem.new(dir)
-			@server = Server.new(store, 'http://localhost:4567/')
+			@server = Server.new(store, Secrets.endpoint)
 		end
 		@server
 	end
@@ -93,7 +93,7 @@ class Public < Sinatra::Base
 	end
 
 	get '/user/' do
-		'<html><head><link rel="openid2.provider" href="http://localhost:4567/" /></head><body>User</body></html>'
+		"<html><head><link rel=\"openid2.provider\" href=\"#{request.base_url}/\" /></head><body>User</body></html>"
 	end
 end
 
