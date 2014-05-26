@@ -2,4 +2,6 @@ source 'https://rubygems.org'
 
 gem 'ruby-openid'
 gem 'sinatra'
-gem 'thin'
+group :development do
+	gem 'thin'
+end
