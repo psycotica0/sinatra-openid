@@ -50,7 +50,7 @@ class Public < Sinatra::Base
 				oidresp = oidreq.answer(false)
 			else
 				session[:last_req] = oidreq
-				return [302, {'Location' => "/secret"}, "Login"]
+				redirect '/secret'
 			end
 		else
 			oidresp = server.handle_request(oidreq)
@@ -99,7 +99,7 @@ end
 
 class Private < Sinatra::Base
 	get '/' do
-		[302, {'Location' => 'http://localhost:4567/resume'}, 'Resuming']
+		redirect '/resume'
 	end
 
 	def self.new(*)
